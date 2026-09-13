@@ -67,6 +67,9 @@ class GeminiProvider(AIProvider):
                     config=config,
                 )
                 return self._parse_response(response)
+            except ClientError as err:
+                logger.error("Gemini client error (non-retryable): %s", err.message if hasattr(err, "message") else str(err))
+                raise
             except (APIError, ServerError) as err:
                 logger.warning(
                     "Gemini API transient error on attempt %d/%d: %s",
@@ -77,9 +80,6 @@ class GeminiProvider(AIProvider):
                 if attempt == self.max_retries:
                     raise
                 await asyncio.sleep(self.retry_delay * (2 ** (attempt - 1)))
-            except ClientError as err:
-                logger.error("Gemini client error (non-retryable): %s", str(err))
-                raise
 
         raise RuntimeError("Exceeded maximum retry attempts for Gemini request.")
 

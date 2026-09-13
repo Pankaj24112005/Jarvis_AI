@@ -2,6 +2,13 @@
 
 import asyncio
 import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 from typing import AsyncIterator
 from rich.console import Console
 from rich.panel import Panel

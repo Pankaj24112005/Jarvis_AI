@@ -24,12 +24,12 @@ class Settings(BaseSettings):
         description="Google Gemini API key",
     )
     gemini_primary_model: str = Field(
-        default="gemini-2.5-flash",
+        default="gemini-3.8-flash",
         validation_alias="GEMINI_PRIMARY_MODEL",
         description="Default reasoning model",
     )
     gemini_fast_model: str = Field(
-        default="gemini-2.0-flash",
+        default="gemini-3.6-flash",
         validation_alias="GEMINI_FAST_MODEL",
         description="Fast low-latency model",
     )

@@ -47,7 +47,7 @@ def test_settings_defaults():
     settings = Settings(gemini_api_key="")
     assert settings.jarvis_name == "JARVIS"
     assert settings.user_name == "Sir"
-    assert settings.gemini_primary_model == "gemini-2.5-flash"
+    assert settings.gemini_primary_model == "gemini-3.8-flash"
     assert not settings.is_gemini_configured
 
 
