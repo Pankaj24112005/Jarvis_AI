@@ -141,15 +141,27 @@ class GeminiProvider(AIProvider):
             tools=gemini_tools,
         )
 
+    def create_chat_session(
+        self,
+        tools: list[types.Tool] | None = None,
+        system_instruction: str | None = None,
+        model: str | None = None,
+    ) -> Any:
+        """Create an asynchronous multi-turn chat session with optional tool bindings."""
+        target_model = model or self.primary_model
+        config = types.GenerateContentConfig(
+            system_instruction=system_instruction,
+            tools=tools,
+        )
+        return self.client.aio.chats.create(model=target_model, config=config)
+
+    async def send_chat_message(self, chat: Any, message: Any) -> ModelResponse:
+        """Send a message (text or Part) in a chat session and return standardized ModelResponse."""
         try:
-            response = await self.client.aio.models.generate_content(
-                model=target_model,
-                contents=prompt,
-                config=config,
-            )
+            response = await chat.send_message(message)
             return self._parse_response(response)
         except Exception as ex:
-            logger.error("Error during Gemini tool-calling generation: %s", ex)
+            logger.error("Error sending chat message in Gemini session: %s", ex)
             raise
 
     async def analyze_image(
