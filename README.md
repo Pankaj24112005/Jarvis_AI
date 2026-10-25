@@ -144,7 +144,7 @@ graph TD
 
     ToolReg -->|3. Tool Execution Result| StepExec
     StepExec -->|4. Post-Execution Outcome Validation| StepVerif
-    StepVerif -->|Sensory Verification (Active Window / OCR)| ScreenTools
+    StepVerif -->|"Sensory Verification (Active Window / OCR)"| ScreenTools
     StepVerif -->|Verification Status| StepExec
 
     StepExec -->|If NOT_VERIFIED| Recovery
