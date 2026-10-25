@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JARVIS Core Visualizer HUD</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="hud-container">
+        <!-- Top Status Bar -->
+        <header class="hud-header">
+            <div class="header-left">
+                <div class="hud-brand">
+                    <span class="brand-glow">JARVIS</span>
+                    <span class="brand-sub">OS TELEMETRY HUD // v5.0</span>
+                </div>
+            </div>
+            <div class="header-center">
+                <div class="state-pill" id="statePill">
+                    <span class="state-dot" id="stateDot"></span>
+                    <span class="state-text" id="stateText">IDLE</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="connection-badge" id="connBadge">
+                    <span class="conn-dot"></span>
+                    <span id="connText">CONNECTING</span>
+                </div>
+                <div class="uptime-badge" id="clockText">00:00:00</div>
+            </div>
+        </header>
+
+        <!-- Main Visualizer Viewport -->
+        <main class="hud-main">
+            <!-- Left Telemetry Column -->
+            <section class="hud-panel panel-left">
+                <div class="panel-header">
+                    <span class="panel-title">SYSTEM STATUS</span>
+                    <span class="panel-corner"></span>
+                </div>
+                <div class="panel-content">
+                    <div class="metric-row">
+                        <span class="metric-label">OPERATIONAL STATE</span>
+                        <span class="metric-value" id="valState">IDLE</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">ACTIVE VOICE</span>
+                        <span class="metric-value highlight" id="valVoice">Charon</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">PUSH-TO-TALK</span>
+                        <span class="metric-value" id="valPtt">RELEASED</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">SPEAKER PLAYBACK</span>
+                        <span class="metric-value" id="valSpeaking">INACTIVE</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">AUDIO FREQUENCY</span>
+                        <span class="metric-value">24.0 kHz / 16-BIT</span>
+                    </div>
+
+                    <div class="audio-energy-section">
+                        <span class="section-label">AUDIO ENERGY LEVEL</span>
+                        <div class="energy-meter">
+                            <div class="energy-fill" id="energyFill"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-header" style="margin-top: 18px;">
+                    <span class="panel-title">VOICE CONTROLS</span>
+                </div>
+                <div class="panel-content">
+                    <div class="ptt-guide">
+                        <div class="keycap">CTRL</div>
+                        <span class="plus">+</span>
+                        <div class="keycap">SPACE</div>
+                    </div>
+                    <p class="ptt-desc">Hold to speak live to JARVIS. Press anytime during playback to interrupt.</p>
+                </div>
+            </section>
+
+            <!-- Center Arc Reactor Canvas -->
+            <section class="hud-center">
+                <div class="reactor-wrapper">
+                    <canvas id="reactorCanvas" width="560" height="560"></canvas>
+                    <div class="reactor-overlay">
+                        <div class="core-status-text" id="coreStatus">SYSTEM READY</div>
+                        <div class="core-subtext" id="coreSub">AWAITING INPUT</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Activity Column -->
+            <section class="hud-panel panel-right">
+                <div class="panel-header">
+                    <span class="panel-title">TOOL RADAR</span>
+                    <span class="panel-corner"></span>
+                </div>
+                <div class="panel-content">
+                    <div id="toolRadarContent">
+                        <div class="radar-empty" id="radarEmpty">
+                            <div class="radar-scan-line"></div>
+                            <span>NO TOOL ACTIVE</span>
+                        </div>
+                        <div class="radar-active hidden" id="radarActive">
+                            <div class="metric-row">
+                                <span class="metric-label">TOOL</span>
+                                <span class="metric-value highlight" id="toolName">filesystem_read</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">STATUS</span>
+                                <span class="badge" id="toolStatusBadge">REQUESTED</span>
+                            </div>
+                            <div class="tool-args-container">
+                                <span class="section-label">SANITIZED ARGUMENTS</span>
+                                <pre class="tool-args-pre" id="toolArgsPre">{}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-header" style="margin-top: 18px;">
+                    <span class="panel-title">EVENT LOG STREAM</span>
+                </div>
+                <div class="panel-content">
+                    <div class="log-stream" id="logStream">
+                        <div class="log-entry sys">[SYSTEM] HUD initialized and listening...</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer Bar -->
+        <footer class="hud-footer">
+            <div class="footer-left">SECURITY: 5-TIER PERMISSION GATE ACTIVE</div>
+            <div class="footer-center" id="footerMessage">READY FOR INSTRUCTIONS</div>
+            <div class="footer-right">GEMINI 3.1 FLASH LIVE // BIDIRECTIONAL AUDIO</div>
+        </footer>
+
+        <!-- High-Risk Permission Modal -->
+        <div class="modal-backdrop hidden" id="permissionModal">
+            <div class="permission-card">
+                <div class="modal-header">
+                    <span class="alert-icon">⚠️</span>
+                    <span class="modal-title">SECURITY CONFIRMATION REQUIRED</span>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-desc" id="permDescription">JARVIS is requesting permission to execute an action.</p>
+                    <div class="perm-detail-row">
+                        <span class="detail-label">TOOL:</span>
+                        <span class="detail-val" id="permToolName">-</span>
+                    </div>
+                    <div class="perm-detail-row">
+                        <span class="detail-label">SECURITY LEVEL:</span>
+                        <span class="detail-val alert" id="permLevel">-</span>
+                    </div>
+                    <div class="perm-args-box">
+                        <span class="section-label">REQUEST ARGUMENTS:</span>
+                        <pre id="permArgsPre">{}</pre>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-deny" id="btnDeny">DENY (ESC)</button>
+                    <button class="btn btn-allow" id="btnAllow">AUTHORIZE ACTION</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

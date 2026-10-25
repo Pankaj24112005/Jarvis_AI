@@ -14,6 +14,8 @@ class AgentState(str, Enum):
     TOOL_EXECUTION = "TOOL_EXECUTION"
     WAITING_FOR_PERMISSION = "WAITING_FOR_PERMISSION"
     SPEAKING = "SPEAKING"
+    INTERRUPTED = "INTERRUPTED"
+    RECONNECTING = "RECONNECTING"
     ERROR = "ERROR"
     CANCELLED = "CANCELLED"
 
@@ -31,33 +33,42 @@ class StateMachine:
         AgentState.IDLE: {
             AgentState.LISTENING,
             AgentState.THINKING,
+            AgentState.RECONNECTING,
             AgentState.ERROR,
         },
         AgentState.LISTENING: {
             AgentState.THINKING,
             AgentState.IDLE,
+            AgentState.INTERRUPTED,
             AgentState.CANCELLED,
+            AgentState.RECONNECTING,
             AgentState.ERROR,
         },
         AgentState.THINKING: {
             AgentState.TOOL_EXECUTION,
             AgentState.WAITING_FOR_PERMISSION,
             AgentState.SPEAKING,
+            AgentState.INTERRUPTED,
             AgentState.IDLE,
             AgentState.CANCELLED,
+            AgentState.RECONNECTING,
             AgentState.ERROR,
         },
         AgentState.TOOL_EXECUTION: {
             AgentState.THINKING,
             AgentState.WAITING_FOR_PERMISSION,
             AgentState.SPEAKING,
+            AgentState.INTERRUPTED,
             AgentState.IDLE,
             AgentState.CANCELLED,
+            AgentState.RECONNECTING,
             AgentState.ERROR,
         },
         AgentState.WAITING_FOR_PERMISSION: {
             AgentState.TOOL_EXECUTION,
             AgentState.THINKING,
+            AgentState.SPEAKING,
+            AgentState.INTERRUPTED,
             AgentState.IDLE,
             AgentState.CANCELLED,
             AgentState.ERROR,
@@ -65,15 +76,33 @@ class StateMachine:
         AgentState.SPEAKING: {
             AgentState.IDLE,
             AgentState.LISTENING,
+            AgentState.THINKING,
+            AgentState.TOOL_EXECUTION,
+            AgentState.INTERRUPTED,
             AgentState.CANCELLED,
+            AgentState.RECONNECTING,
+            AgentState.ERROR,
+        },
+        AgentState.INTERRUPTED: {
+            AgentState.LISTENING,
+            AgentState.IDLE,
+            AgentState.THINKING,
+            AgentState.ERROR,
+        },
+        AgentState.RECONNECTING: {
+            AgentState.IDLE,
+            AgentState.LISTENING,
+            AgentState.THINKING,
             AgentState.ERROR,
         },
         AgentState.ERROR: {
             AgentState.IDLE,
             AgentState.THINKING,
+            AgentState.RECONNECTING,
         },
         AgentState.CANCELLED: {
             AgentState.IDLE,
+            AgentState.LISTENING,
         },
     }
 

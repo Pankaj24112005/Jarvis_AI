@@ -5,12 +5,27 @@ import webbrowser
 from typing import Any
 import httpx
 from bs4 import BeautifulSoup
+import atexit
 from jarvis.security.permissions import PermissionLevel
 from jarvis.tools.base import BaseTool, ToolResult
 from jarvis.utils.logging import logger
 
 # Lazy singleton for WebDriver session if Selenium is active
 _driver_instance = None
+
+
+def _cleanup_driver() -> None:
+    """Terminate any lingering headless browser session on exit."""
+    global _driver_instance
+    if _driver_instance is not None:
+        try:
+            _driver_instance.quit()
+        except Exception:
+            pass
+        _driver_instance = None
+
+
+atexit.register(_cleanup_driver)
 
 
 class OpenBrowserTool(BaseTool):
@@ -160,3 +175,116 @@ class BrowserActionTool(BaseTool):
 
         except Exception as ex:
             return ToolResult(success=False, error=f"Browser action '{action}' failed: {str(ex)}")
+
+
+class BrowserControlTool(BaseTool):
+    """Controls desktop browser tabs and navigation without terminating the browser."""
+
+    name = "browser_control"
+    description = (
+        "Control desktop browser navigation and tabs (e.g., 'close this tab', 'close current tab', "
+        "'close YouTube tab', 'new tab', 'refresh', 'back'). "
+        "Actions: 'close_tab', 'new_tab', 'refresh', 'back'. "
+        "Does NOT close or terminate the browser application."
+    )
+    permission_level = PermissionLevel.LOW_RISK
+
+    @property
+    def parameters_schema(self) -> dict[str, Any]:
+        return {
+            "type": "OBJECT",
+            "properties": {
+                "action": {
+                    "type": "STRING",
+                    "description": "Browser tab or navigation action: 'close_tab', 'new_tab', 'refresh', 'back'",
+                    "enum": ["close_tab", "new_tab", "refresh", "back"],
+                },
+                "target": {
+                    "type": "STRING",
+                    "description": "Optional tab/window title hint (e.g. 'YouTube', 'Chrome', 'GitHub')",
+                },
+            },
+            "required": ["action"],
+        }
+
+    async def execute(self, action: str, target: str = "", **kwargs) -> ToolResult:
+        norm_action = action.strip().lower()
+        try:
+            import pygetwindow as gw
+            import pyautogui
+
+            # 1. Locate the target browser window
+            all_windows = [w for w in gw.getAllWindows() if w.title and w.title.strip()]
+            browser_windows = []
+
+            # Known browser indicators
+            browser_keys = ["chrome", "edge", "firefox", "brave", "opera", "youtube"]
+
+            target_lower = target.strip().lower() if target else ""
+
+            if target_lower:
+                for w in all_windows:
+                    if target_lower in w.title.lower():
+                        browser_windows.append(w)
+
+            if not browser_windows:
+                # Match any open browser window
+                for w in all_windows:
+                    w_lower = w.title.lower()
+                    if any(bk in w_lower for bk in browser_keys):
+                        browser_windows.append(w)
+
+            # Fallback to active window
+            active_win = gw.getActiveWindow()
+            target_win = browser_windows[0] if browser_windows else active_win
+
+            if not target_win:
+                return ToolResult(
+                    success=False,
+                    error="No open browser window detected to execute browser action.",
+                )
+
+            # Bring window into focus
+            try:
+                if target_win.isMinimized:
+                    target_win.restore()
+                target_win.activate()
+                await asyncio.sleep(0.2)
+            except Exception:
+                pass
+
+            old_title = target_win.title
+
+            if norm_action == "close_tab":
+                pyautogui.hotkey("ctrl", "w")
+                await asyncio.sleep(0.3)
+                return ToolResult(
+                    success=True,
+                    result={
+                        "action": "close_tab",
+                        "status": "closed",
+                        "target": target or "active_tab",
+                        "window_title": old_title,
+                        "success": True,
+                    },
+                )
+
+            elif norm_action == "new_tab":
+                pyautogui.hotkey("ctrl", "t")
+                return ToolResult(success=True, result={"action": "new_tab", "status": "opened"})
+
+            elif norm_action == "refresh":
+                pyautogui.press("f5")
+                return ToolResult(success=True, result={"action": "refresh", "status": "refreshed"})
+
+            elif norm_action == "back":
+                pyautogui.hotkey("alt", "left")
+                return ToolResult(success=True, result={"action": "back", "status": "navigated_back"})
+
+            else:
+                return ToolResult(success=False, error=f"Unsupported browser_control action '{action}'.")
+
+        except Exception as ex:
+            logger.error("Browser control execution error: %s", ex)
+            return ToolResult(success=False, error=f"Browser control failed: {str(ex)}")
+

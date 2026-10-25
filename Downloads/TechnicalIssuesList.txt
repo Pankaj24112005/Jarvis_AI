@@ -1,0 +1,5 @@
+List of Technical Issues Encountered:
+
+1. Application Launch Issue: Unable to launch 'chrome.exe'. System error indicated the file could not be found. (This prevented opening Gmail directly via Chrome).
+2. Browser Interaction Issue: After manually navigating via general browser tools, attempts to automatically type into the Gmail compose window were unsuccessful due to a lack of direct control/focus on the newly opened tab.
+3. Search Connectivity Issue: An attempt to search online for 'Apna College' failed, indicating a potential temporary network or API connectivity problem.

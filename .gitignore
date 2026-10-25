@@ -38,3 +38,4 @@ logs/
 .voice_waveform
 .voice_transcript
 state/
+memory/episodes/

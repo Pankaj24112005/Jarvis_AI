@@ -86,15 +86,21 @@ class AuditLogger:
             logger.error("Failed to write audit log entry: %s", ex)
 
     def _sanitize_dict(self, data: dict[str, Any]) -> dict[str, Any]:
-        """Recursively redact sensitive key names and patterns."""
+        """Recursively redact sensitive key names, patterns, and image/binary payloads."""
         sanitized: dict[str, Any] = {}
         for k, v in data.items():
-            if any(term in k.lower() for term in ["key", "pass", "secret", "token", "auth", "cred"]):
+            k_lower = str(k).lower()
+            if any(term in k_lower for term in ["key", "pass", "secret", "token", "auth", "cred"]):
                 sanitized[k] = "[REDACTED]"
+            elif any(term in k_lower for term in ["base64", "image_bytes", "raw_bytes"]):
+                sanitized[k] = "[IMAGE_DATA_REDACTED]"
             elif isinstance(v, dict):
                 sanitized[k] = self._sanitize_dict(v)
             elif isinstance(v, str):
-                sanitized[k] = _SECRET_PATTERN.sub(r"\1=[REDACTED]", v)
+                if len(v) > 500 and not " " in v[:100]:  # likely base64 or encoded blob
+                    sanitized[k] = "[BLOB_DATA_REDACTED]"
+                else:
+                    sanitized[k] = _SECRET_PATTERN.sub(r"\1=[REDACTED]", v)
             else:
                 sanitized[k] = v
         return sanitized

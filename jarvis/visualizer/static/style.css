@@ -1,0 +1,601 @@
+/* JARVIS Cybernetic HUD Stylesheet (Phase 5) */
+
+:root {
+    --bg-dark: #050811;
+    --bg-panel: rgba(10, 16, 32, 0.72);
+    --bg-card: rgba(15, 23, 42, 0.85);
+    --border-color: rgba(0, 240, 255, 0.22);
+    --border-bright: rgba(0, 240, 255, 0.65);
+    
+    /* Dynamic Theme Accents (Shifted by JS based on State) */
+    --accent-glow: #00f0ff;
+    --accent-glow-rgb: 0, 240, 255;
+    --accent-secondary: #0099ff;
+
+    --font-display: 'Orbitron', -apple-system, sans-serif;
+    --font-hud: 'Rajdhani', -apple-system, sans-serif;
+    --font-mono: 'Share Tech Mono', monospace;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: #e2e8f0;
+    font-family: var(--font-hud);
+    font-size: 15px;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+    background-image: 
+        radial-gradient(circle at 50% 50%, rgba(var(--accent-glow-rgb), 0.06) 0%, transparent 65%),
+        linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+    background-size: 100% 100%, 40px 40px, 40px 40px;
+}
+
+.hud-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 16px;
+    gap: 14px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Header Bar                                                                 */
+/* -------------------------------------------------------------------------- */
+.hud-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px 20px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(var(--accent-glow-rgb), 0.12);
+}
+
+.hud-brand {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-glow {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--accent-glow);
+    text-shadow: 0 0 12px var(--accent-glow), 0 0 24px rgba(var(--accent-glow-rgb), 0.6);
+}
+
+.brand-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.state-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--accent-glow);
+    border-radius: 20px;
+    padding: 6px 18px;
+    box-shadow: 0 0 14px rgba(var(--accent-glow-rgb), 0.35);
+}
+
+.state-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-glow);
+    box-shadow: 0 0 8px var(--accent-glow);
+    animation: pulseDot 1.4s infinite ease-in-out;
+}
+
+.state-text {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--accent-glow);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.connection-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 4px 10px;
+}
+
+.conn-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #eab308;
+}
+
+.connection-badge.connected .conn-dot {
+    background: #10b981;
+    box-shadow: 0 0 6px #10b981;
+}
+
+.connection-badge.connected {
+    color: #6ee7b7;
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.uptime-badge {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: #94a3b8;
+    letter-spacing: 1px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Main Layout Columns                                                        */
+/* -------------------------------------------------------------------------- */
+.hud-main {
+    display: grid;
+    grid-template-columns: 320px 1fr 340px;
+    gap: 16px;
+    flex: 1;
+    min-height: 0;
+}
+
+.hud-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+}
+
+.panel-title {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--accent-glow);
+    text-shadow: 0 0 8px rgba(var(--accent-glow-rgb), 0.4);
+}
+
+.panel-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.metric-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #94a3b8;
+    letter-spacing: 1px;
+}
+
+.metric-value {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+.metric-value.highlight {
+    color: var(--accent-glow);
+    text-shadow: 0 0 6px rgba(var(--accent-glow-rgb), 0.5);
+}
+
+/* Audio Energy Meter */
+.audio-energy-section {
+    margin-top: 8px;
+}
+
+.section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: #64748b;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.energy-meter {
+    height: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.energy-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent-glow), #10b981);
+    box-shadow: 0 0 8px var(--accent-glow);
+    transition: width 0.08s ease-out;
+}
+
+/* PTT Keycap Display */
+.ptt-guide {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 0;
+}
+
+.keycap {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent-glow);
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--border-bright);
+    border-radius: 4px;
+    padding: 6px 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6), inset 0 0 8px rgba(var(--accent-glow-rgb), 0.2);
+}
+
+.plus {
+    font-family: var(--font-mono);
+    color: #64748b;
+}
+
+.ptt-desc {
+    font-size: 12px;
+    color: #94a3b8;
+    text-align: center;
+    line-height: 1.4;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Center Arc Reactor Viewport                                                */
+/* -------------------------------------------------------------------------- */
+.hud-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.reactor-wrapper {
+    position: relative;
+    width: 560px;
+    height: 560px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#reactorCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.reactor-overlay {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    pointer-events: none;
+}
+
+.core-status-text {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: var(--accent-glow);
+    text-shadow: 0 0 10px var(--accent-glow);
+    margin-bottom: 4px;
+}
+
+.core-subtext {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Right Panel: Tool Radar & Logs                                             */
+/* -------------------------------------------------------------------------- */
+.radar-empty {
+    height: 100px;
+    border: 1px dashed rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: #64748b;
+    position: relative;
+    overflow: hidden;
+}
+
+.radar-scan-line {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(var(--accent-glow-rgb), 0.1), transparent);
+    animation: radarSweep 3s infinite linear;
+}
+
+.radar-active {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    background: rgba(var(--accent-glow-rgb), 0.15);
+    color: var(--accent-glow);
+    border: 1px solid rgba(var(--accent-glow-rgb), 0.3);
+}
+
+.tool-args-pre {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    padding: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #94a3b8;
+    max-height: 80px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.log-stream {
+    height: 160px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 8px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+}
+
+.log-entry {
+    color: #94a3b8;
+    line-height: 1.3;
+}
+
+.log-entry.state {
+    color: var(--accent-glow);
+}
+
+.log-entry.tool {
+    color: #d946ef;
+}
+
+.log-entry.alert {
+    color: #f43f5e;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Footer Bar                                                                 */
+/* -------------------------------------------------------------------------- */
+.hud-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #64748b;
+    letter-spacing: 1px;
+}
+
+.footer-center {
+    color: var(--accent-glow);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Permission Modal Dialog                                                    */
+/* -------------------------------------------------------------------------- */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.permission-card {
+    background: #0d1322;
+    border: 2px solid #ff2a4b;
+    border-radius: 10px;
+    width: 520px;
+    box-shadow: 0 0 30px rgba(255, 42, 75, 0.4), inset 0 0 20px rgba(255, 42, 75, 0.1);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: modalPop 0.25s ease-out;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255, 42, 75, 0.3);
+    padding-bottom: 10px;
+}
+
+.alert-icon {
+    font-size: 20px;
+}
+
+.modal-title {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #ff2a4b;
+}
+
+.modal-desc {
+    font-size: 14px;
+    color: #cbd5e1;
+    margin-bottom: 12px;
+}
+
+.perm-detail-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 4px 0;
+}
+
+.detail-label {
+    color: #64748b;
+}
+
+.detail-val {
+    color: #f8fafc;
+    font-weight: 600;
+}
+
+.detail-val.alert {
+    color: #ff2a4b;
+}
+
+.perm-args-box pre {
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 10px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: #94a3b8;
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.btn {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
+
+.btn-deny {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #94a3b8;
+}
+
+.btn-deny:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+}
+
+.btn-allow {
+    background: #ff2a4b;
+    border: 1px solid #ff2a4b;
+    color: #ffffff;
+    box-shadow: 0 0 14px rgba(255, 42, 75, 0.5);
+}
+
+.btn-allow:hover {
+    background: #ff4765;
+    box-shadow: 0 0 20px rgba(255, 42, 75, 0.8);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Animations */
+@keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+@keyframes radarSweep {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+@keyframes modalPop {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}

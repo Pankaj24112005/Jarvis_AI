@@ -68,6 +68,10 @@ class GeminiProvider(AIProvider):
                 )
                 return self._parse_response(response)
             except ClientError as err:
+                if (err.code == 429 or "RESOURCE_EXHAUSTED" in str(err)) and target_model != self.fast_model:
+                    logger.warning("Primary model quota exceeded (429). Falling back to fast model: %s", self.fast_model)
+                    target_model = self.fast_model
+                    continue
                 logger.error("Gemini client error (non-retryable): %s", err.message if hasattr(err, "message") else str(err))
                 raise
             except (APIError, ServerError) as err:
@@ -141,6 +145,21 @@ class GeminiProvider(AIProvider):
             tools=gemini_tools,
         )
 
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                response = await self.client.aio.models.generate_content(
+                    model=target_model,
+                    contents=prompt,
+                    config=config,
+                )
+                return self._parse_response(response)
+            except (APIError, ServerError) as err:
+                if attempt == self.max_retries:
+                    raise
+                await asyncio.sleep(self.retry_delay * (2 ** (attempt - 1)))
+
+        raise RuntimeError("Exceeded maximum retry attempts for Gemini request with tools.")
+
     def create_chat_session(
         self,
         tools: list[types.Tool] | None = None,
@@ -157,12 +176,33 @@ class GeminiProvider(AIProvider):
 
     async def send_chat_message(self, chat: Any, message: Any) -> ModelResponse:
         """Send a message (text or Part) in a chat session and return standardized ModelResponse."""
-        try:
-            response = await chat.send_message(message)
-            return self._parse_response(response)
-        except Exception as ex:
-            logger.error("Error sending chat message in Gemini session: %s", ex)
-            raise
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                response = await chat.send_message(message)
+                return self._parse_response(response)
+            except ClientError as err:
+                if (err.code == 429 or "RESOURCE_EXHAUSTED" in str(err)) and attempt < self.max_retries:
+                    logger.warning(
+                        "Gemini rate limit (429) on chat turn %d/%d, backing off...",
+                        attempt,
+                        self.max_retries,
+                    )
+                    await asyncio.sleep(self.retry_delay * (2 ** attempt))
+                    continue
+                logger.error("Gemini client error (non-retryable): %s", err.message if hasattr(err, "message") else str(err))
+                raise
+            except (APIError, ServerError) as err:
+                logger.warning(
+                    "Gemini chat transient error on attempt %d/%d: %s",
+                    attempt,
+                    self.max_retries,
+                    err.message if hasattr(err, "message") else str(err),
+                )
+                if attempt == self.max_retries:
+                    raise
+                await asyncio.sleep(self.retry_delay * (2 ** (attempt - 1)))
+
+        raise RuntimeError("Exceeded maximum retry attempts for Gemini chat request.")
 
     async def analyze_image(
         self,

@@ -56,6 +56,28 @@ class Settings(BaseSettings):
     vision_enabled: bool = Field(default=False, validation_alias="VISION_ENABLED")
     gesture_enabled: bool = Field(default=False, validation_alias="GESTURE_ENABLED")
     web_hud_enabled: bool = Field(default=False, validation_alias="WEB_HUD_ENABLED")
+    web_hud_host: str = Field(
+        default="127.0.0.1",
+        validation_alias="WEB_HUD_HOST",
+        description="Local interface host for HUD server",
+    )
+    web_hud_port: int = Field(
+        default=8000,
+        validation_alias="WEB_HUD_PORT",
+        description="Port for HUD server",
+    )
+    web_hud_auto_open: bool = Field(
+        default=True,
+        validation_alias="WEB_HUD_AUTO_OPEN",
+        description="Whether to automatically launch HUD in browser",
+    )
+
+    # Voice Configuration
+    gemini_live_voice: str = Field(
+        default="Charon",
+        validation_alias="GEMINI_LIVE_VOICE",
+        description="Prebuilt voice name for Gemini Live (e.g. Charon, Orus, Gacrux, Puck, Aoede)",
+    )
 
     # Security & Permission threshold (0 to 4)
     permission_confirmation_threshold: int = Field(

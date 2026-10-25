@@ -1,0 +1,112 @@
+```mermaid
+graph TD
+    %% Styling Classes
+    classDef clientLayer fill:#0284C7,stroke:#0369A1,stroke-width:2px,color:#FFFFFF;
+    classDef agentLayer fill:#1D4ED8,stroke:#1E40AF,stroke-width:2px,color:#FFFFFF;
+    classDef memoryLayer fill:#B45309,stroke:#92400E,stroke-width:2px,color:#FFFFFF;
+    classDef modelLayer fill:#047857,stroke:#065F46,stroke-width:2px,color:#FFFFFF;
+    classDef taskLayer fill:#4338CA,stroke:#3730A3,stroke-width:2px,color:#FFFFFF;
+    classDef secLayer fill:#BE123C,stroke:#9F1239,stroke-width:2px,color:#FFFFFF;
+    classDef toolLayer fill:#0F766E,stroke:#115E59,stroke-width:2px,color:#FFFFFF;
+    classDef envLayer fill:#334155,stroke:#1E293B,stroke-width:2px,color:#FFFFFF;
+
+    subgraph Interaction_Layer["Interaction & Observability Layer"]
+        CLI["CLI Interface (main.py)"]:::clientLayer
+        Voice["Live Voice Loop (cli_voice.py)"]:::clientLayer
+        HUD["Cybernetic HUD (run_hud.py / FastAPI)"]:::clientLayer
+    end
+
+    subgraph Core_Orchestration["Core Orchestration & Telemetry"]
+        Agent["JarvisAgent (jarvis/core/agent.py)"]:::agentLayer
+        StateMachine["StateMachine (jarvis/core/state.py)"]:::agentLayer
+        EventBus["Asynchronous EventBus (jarvis/events.py)"]:::agentLayer
+    end
+
+    subgraph Memory_Subsystem["5-Tier Memory Subsystem"]
+        MemMgr["MemoryManager (jarvis/memory/manager.py)"]:::memoryLayer
+        ShortTerm["ShortTermMemory (In-memory buffer)"]:::memoryLayer
+        Working["WorkingMemory (Task scratchpad)"]:::memoryLayer
+        Episodic["EpisodicMemory (SQLite Timeline)"]:::memoryLayer
+        Semantic["SemanticMemory (Facts Vault)"]:::memoryLayer
+        Project["ProjectMemory (Git & Workspace)"]:::memoryLayer
+    end
+
+    subgraph Model_Provider["Multimodal Model Layer"]
+        Gemini["GeminiProvider (jarvis/models/gemini.py)"]:::modelLayer
+        LiveSession["Gemini Live Preview (16k In / 24k Out)"]:::modelLayer
+    end
+
+    subgraph Task_Subsystem["Structured Task & Verification Engine (Phase 8)"]
+        TaskMgr["TaskManager (jarvis/tasks/manager.py)"]:::taskLayer
+        StepExec["StepExecutor (jarvis/tasks/executor.py)"]:::taskLayer
+        StepVerif["StepVerifier (jarvis/tasks/verifier.py)"]:::taskLayer
+        Recovery["RecoveryPolicy & AntiLoopGuard (jarvis/tasks/recovery.py)"]:::taskLayer
+    end
+
+    subgraph Security_Governance["Security & Governance"]
+        PermController["PermissionController (5-Tier Gating)"]:::secLayer
+        HumanGate["Human Approval Prompt (CLI / HUD)"]:::secLayer
+        AuditLog["Sanitized AuditLogger (logs/audit.log)"]:::secLayer
+    end
+
+    subgraph Execution_Subsystem["Authoritative Tool Subsystem (37 Tools)"]
+        ToolReg["ToolRegistry (jarvis/tools/registry.py)"]:::toolLayer
+        FSTools["FileSystem Tools (read_file, write_file, ...)"]:::toolLayer
+        AppTools["Application Tools (launch, focus, close, ...)"]:::toolLayer
+        CompTools["Computer Tools (mouse_click, keyboard_type, ...)"]:::toolLayer
+        ScreenTools["Screen Tools (get_active_window, capture_screen, ...)"]:::toolLayer
+        WebTools["Web & Media Tools (browser_open, web_search, youtube)"]:::toolLayer
+    end
+
+    subgraph Workstation_OS["Workstation OS & Environment"]
+        OS_Win["Windows Workstation OS"]:::envLayer
+        Display["Desktop Display & Windows"]:::envLayer
+        AudioHw["Microphone & Speaker Hardware"]:::envLayer
+    end
+
+    %% Wiring & Dataflow
+    CLI -->|Text Prompts| Agent
+    Voice -->|16kHz PCM Frames| LiveSession
+    LiveSession -->|Tool Call Requests| Agent
+    Agent --> StateMachine
+    Agent --> EventBus
+    EventBus -.->|Broadcast Telemetry| HUD
+    EventBus -.->|State Tracking| StateMachine
+
+    Agent -->|Query Context| MemMgr
+    MemMgr --> ShortTerm
+    MemMgr --> Working
+    MemMgr --> Episodic
+    MemMgr --> Semantic
+    MemMgr --> Project
+    MemMgr -->|Augmented Context| Agent
+
+    Agent -->|Generate / Tool Loop| Gemini
+    Agent -->|Execute Task Workflows| TaskMgr
+    TaskMgr --> StepExec
+    StepExec -->|1. Dispatch Tool Request| ToolReg
+    ToolReg -->|2. Check Permission Level| PermController
+    PermController -->|If Level >= 3| HumanGate
+    PermController -->|Sanitized Audit Event| AuditLog
+    PermController -->|Authorized Approval| ToolReg
+
+    ToolReg --> FSTools
+    ToolReg --> AppTools
+    ToolReg --> CompTools
+    ToolReg --> ScreenTools
+    ToolReg --> WebTools
+
+    FSTools --> OS_Win
+    AppTools --> OS_Win
+    CompTools --> Display
+    ScreenTools --> Display
+    LiveSession --> AudioHw
+
+    ToolReg -->|3. Tool Execution Result| StepExec
+    StepExec -->|4. Post-Execution Outcome Validation| StepVerif
+    StepVerif -->|Sensory Verification (Active Window / OCR)| ScreenTools
+    StepVerif -->|Verification Status| StepExec
+
+    StepExec -->|If NOT_VERIFIED| Recovery
+    Recovery -->|Idempotency, Budget & Loop Check| StepExec
+```
